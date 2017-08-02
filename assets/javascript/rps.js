@@ -110,4 +110,11 @@ $(document).ready(function() {
 	  // The number of online users is the number of children in the connections list.
 	  //$("#connected-viewers").html(snap.numChildren());
 	});
+
+	$("input[name='submit-name']").click(function(event) {
+		event.preventDefault();
+		alert($("input[name='input-name']").val());
+		$("input[name='input-name']").val("");
+	});
+	// $("div[name='player[1]']")
 });

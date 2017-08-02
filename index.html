@@ -8,6 +8,9 @@
 
 	<!-- Optional theme -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	
+	<link rel="stylesheet" href="assets/css/style.css">
+
 	<script
 	src="http://code.jquery.com/jquery-3.2.1.js"
 	integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
@@ -17,5 +20,32 @@
 </head>
 <body>
 	<header><h1>Live Rock, Paper, Scissors Multiplayer Game</h1></header>
+	<div class="main-content">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-4 col-md-offset-4 col-sm-4 col-sm-offset-4 col-xs-4 col-xs-offset-4">
+					<input type="text" name="input-name" placeholder="Name">
+					<input type="submit" name="submit-name">
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4 col-sm-4 col-xs-4">
+					<div class="player-box" name="player[1]" data-player-number="1">
+						<p>Waiting for Player 1 ...</p>
+					</div>
+				</div>
+				<div class="col-md-4 col-sm-4 col-xs-4">
+					<div class="player-box">
+						<p></p>
+					</div>
+				</div>
+				<div class="col-md-4 col-sm-4 col-xs-4">
+					<div class="player-box" name="player[2]" data-player-number="2">
+						<p>Waiting for Player 2 ...</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </body>
 </html>
