@@ -111,7 +111,7 @@ $(document).ready(function() {
 	  //$("#connected-viewers").html(snap.numChildren());
 	});
 
-	$("input[name='submit-name']").click(function(event) {
+	$("input[name='submit-name']").on("click", function(event) {
 		event.preventDefault();
 		alert($("input[name='input-name']").val());
 		$("input[name='input-name']").val("");
