@@ -11,6 +11,25 @@ $(document).ready(function() {
 	firebase.initializeApp(config);
 	var database = firebase.database();
 
+
+	var gameplayStates = {
+	    EMPTY: 0,
+	    WAITING: 1,
+	    FULL: 2
+	};
+	var rpsChoices = {
+	    ROCK: 0,
+	    PAPER: 1,
+	    SCISSORS: 2
+	};
+	var playerStates = {
+		NOT: 0,
+		FIRST: 1,
+		SECOND: 2
+	}
+
+	var currentState = gameplayStates.EMPTY;
+
 	var isPlayer = false;
 
 	var activePlayers = 0;
@@ -18,21 +37,22 @@ $(document).ready(function() {
 	var playerOne = 
 	{
 		name: "",
-		choice: "scissors"
+		choice: null
 	};
 
 	var playerTwo = 
 	{
 		name: "",
-		choice: "rock"
+		choice: null
 	};
 
 	database.ref().set({
 		playerOneName: "",
 		playerTwoName: "",
-		playerOneChoice: "scissors",
-		playerTwoChoice: "rock",
-		numActivePlayers: 1
+		playerOneChoice: null,
+		playerTwoChoice: null,
+		numActivePlayers: 0,
+		gameState: gameplayStates.EMPTY
 	});
 
 	database.ref().on("value", function(snapshot) {
@@ -80,41 +100,68 @@ $(document).ready(function() {
 				}
 			}
 		}
-	});
-
-
-	// connectionsRef references a specific location in our database.
-	// All of our connections will be stored in this directory.
-	var connectionsRef = database.ref("/connections");
-
-	// '.info/connected' is a special location provided by Firebase that is updated
-	// every time the client's connection state changes.
-	// '.info/connected' is a boolean value, true if the client is connected and false if they are not.
-	var connectedRef = database.ref(".info/connected");
-
-	// When the client's connection state changes...
-	connectedRef.on("value", function(snap) {
-		// If they are connected..
-		if (snap.val()) {
-			// Add user to the connections list.
-			var con = connectionsRef.push(true);
-		    // Remove user from the connection list when they disconnect.
-		    con.onDisconnect().remove();
+		if (snapshot.child("gameState").exists()) {
+			currentState = snapshot.val().gameState;
+			updateHtmlByGameState(currentState);
 		}
 	});
 
-	// When first loaded or when the connections list changes...
-	connectionsRef.on("value", function(snap) {
 
-	  // Display the viewer count in the html.
-	  // The number of online users is the number of children in the connections list.
-	  //$("#connected-viewers").html(snap.numChildren());
-	});
+
 
 	$("input[name='submit-name']").on("click", function(event) {
 		event.preventDefault();
-		alert($("input[name='input-name']").val());
+		debugger;
+		var addedUserName = $("input[name='input-name']").val();
+		if(currentState == gameplayStates.EMPTY || currentState == gameplayStates.WAITING) {
+			activePlayers++;
+			switch(currentState) {
+				case gameplayStates.EMPTY:
+					playerOne.name = addedUserName;
+					currentState = gameplayStates.WAITING;
+					break;
+				case gameplayStates.WAITING:
+					playerTwo.name = addedUserName;
+					currentState = gameplayStates.FULL;
+					break;
+			}
+			database.ref().set({
+				playerOneName: playerOne.name,
+				playerTwoName: playerTwo.name,
+				playerOneChoice: playerOne.choice,
+				playerTwoChoice: playerTwo.choice,
+				numActivePlayers: activePlayers,
+				gameState: currentState
+			});
+		}
+
 		$("input[name='input-name']").val("");
 	});
-	// $("div[name='player[1]']")
+	// $("p[name='player-name[1]']")
+
+	function updateHtmlByGameState(gameState) {
+		switch(gameState) {
+			case gameplayStates.EMPTY:
+				$("p[name='player-message[1]']").show();
+				$("p[name='player-message[2]']").show();
+				$("ul[name='rps-options[1]']").hide();
+				$("ul[name='rps-options[2]']").hide();
+				break;
+			case gameplayStates.WAITING:
+				$("p[name='player-message[1]']").hide();
+				$("p[name='player-message[2]']").show();
+				$("p[name='player-name[1]']").text(playerOne.name);
+				$("ul[name='rps-options[1]']").show();
+				$("ul[name='rps-options[2]']").hide();
+				break;
+			case gameplayStates.FULL:
+				$("p[name='player-message[1]']").hide();
+				$("p[name='player-message[2]']").hide();
+				$("p[name='player-name[1]']").text(playerOne.name);
+				$("p[name='player-name[2]']").text(playerTwo.name);
+				$("ul[name='rps-options[1]']").show();
+				$("ul[name='rps-options[2]']").show();
+				break;
+		}
+	}
 });
