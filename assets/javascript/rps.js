@@ -46,14 +46,14 @@ $(document).ready(function() {
 		choice: null
 	};
 
-	database.ref().set({
-		playerOneName: "",
-		playerTwoName: "",
-		playerOneChoice: null,
-		playerTwoChoice: null,
-		numActivePlayers: 0,
-		gameState: gameplayStates.EMPTY
-	});
+	// database.ref().set({
+	// 	playerOneName: "",
+	// 	playerTwoName: "",
+	// 	playerOneChoice: null,
+	// 	playerTwoChoice: null,
+	// 	numActivePlayers: 0,
+	// 	gameState: gameplayStates.EMPTY
+	// });
 
 	database.ref().on("value", function(snapshot) {
 		if (snapshot.child("playerOneName").exists()) {
@@ -103,9 +103,25 @@ $(document).ready(function() {
 		if (snapshot.child("gameState").exists()) {
 			currentState = snapshot.val().gameState;
 			updateHtmlByGameState(currentState);
+		} else {
+			database.ref().set({
+				playerOneName: "",
+				playerTwoName: "",
+				playerOneChoice: null,
+				playerTwoChoice: null,
+				numActivePlayers: 0,
+				gameState: gameplayStates.EMPTY
+			});
+		}
+		if(currentState == gameplayStates.FULL && playerOne.choice !== null && playerTwo.choice !== null) {
+			// Use determineGameRoundOutcome() method here.
+			// Need to add wins and losses fields to playerOne and playerTwo client-side objects.
 		}
 	});
 
+	function determineGameRoundOutcome(playerOneRps, playerTwoRps) {
+		// TODO still need to implement.
+	}
 
 
 
@@ -138,6 +154,33 @@ $(document).ready(function() {
 		$("input[name='input-name']").val("");
 	});
 	// $("p[name='player-name[1]']")
+
+	function updateDbWithVariables() {
+		database.ref().set({
+			playerOneName: playerOne.name,
+			playerTwoName: playerTwo.name,
+			playerOneChoice: playerOne.choice,
+			playerTwoChoice: playerTwo.choice,
+			numActivePlayers: activePlayers,
+			gameState: currentState
+		});
+	}
+
+	$(".rps-choice").on("click", function(e) {
+		debugger;
+		var choice = $(this).attr("data-choice");
+		var playerNum = parseInt($(this).attr("data-player"));
+		switch(playerNum) {
+			case(playerStates.FIRST):
+				playerOne.choice = choice;
+				updateDbWithVariables();
+				break;
+			case(playerStates.SECOND):
+				playerTwo.choice = choice;
+				updateDbWithVariables();
+				break;
+		}
+	});
 
 	function updateHtmlByGameState(gameState) {
 		switch(gameState) {
