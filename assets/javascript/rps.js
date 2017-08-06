@@ -153,6 +153,9 @@ $(document).ready(function() {
 				playerOne.losses++;
 				$('.winner-name').text(playerTwo.name + " Wins!!!");
 				break;
+			case playerStates.NOT:
+				$('.winner-name').text("Tie!!!");
+				break;
 		}
 		$("p[name='player-choice[1]']").text(playerOne.choice);
 		$("p[name='player-choice[2]']").text(playerTwo.choice);
