@@ -27,6 +27,16 @@ $(document).ready(function() {
 		FIRST: 1,
 		SECOND: 2
 	}
+	var gameOutcomeState = {
+		LOSS: 0,
+		TIE: 1,
+		WIN: 2
+	}
+	var outcomeStateFromText = {
+		"rock": rpsChoices.ROCK,
+		"paper": rpsChoices.PAPER,
+		"scissors": rpsChoices.SCISSORS
+	}
 
 	var currentState = gameplayStates.EMPTY;
 
@@ -37,23 +47,19 @@ $(document).ready(function() {
 	var playerOne = 
 	{
 		name: "",
-		choice: null
+		choice: null,
+		wins: 0,
+		losses: 0
 	};
 
 	var playerTwo = 
 	{
 		name: "",
-		choice: null
+		choice: null,
+		wins: 0,
+		losses: 0
 	};
 
-	// database.ref().set({
-	// 	playerOneName: "",
-	// 	playerTwoName: "",
-	// 	playerOneChoice: null,
-	// 	playerTwoChoice: null,
-	// 	numActivePlayers: 0,
-	// 	gameState: gameplayStates.EMPTY
-	// });
 
 	database.ref().on("value", function(snapshot) {
 		if (snapshot.child("playerOneName").exists()) {
@@ -67,6 +73,18 @@ $(document).ready(function() {
 		}
 		if (snapshot.child("playerTwoChoice").exists()) {
 			playerTwo.choice = snapshot.val().playerTwoChoice;	
+		}
+		if (snapshot.child("playerOneWins").exists() || snapshot.child("playerOneLosses").exists()) {
+			playerOne.wins = snapshot.val().playerOneWins;
+			playerOne.losses = snapshot.val().playerOneLosses;	
+			$("span[name='player-wins-count[1]']").text(playerOne.wins);
+			$("span[name='player-losses-count[1]']").text(playerOne.losses);
+		}
+		if (snapshot.child("playerTwoWins").exists() || snapshot.child("playerTwoLosses").exists()) {
+			playerTwo.wins = snapshot.val().playerTwoWins;
+			playerTwo.losses = snapshot.val().playerTwoLosses;	
+			$("span[name='player-wins-count[2]']").text(playerTwo.wins);
+			$("span[name='player-losses-count[2]']").text(playerTwo.losses);
 		}
 		if (snapshot.child("numActivePlayers").exists()) {
 			activePlayers = snapshot.val().numActivePlayers;
@@ -106,49 +124,105 @@ $(document).ready(function() {
 		} else {
 			database.ref().set({
 				playerOneName: "",
-				playerTwoName: "",
 				playerOneChoice: null,
+				playerOneWins: 0,
+				playerOneLosses: 0,
+				playerTwoName: "",
 				playerTwoChoice: null,
+				playerTwoWins: 0,
+				playerTwoLosses: 0,
 				numActivePlayers: 0,
 				gameState: gameplayStates.EMPTY
 			});
 		}
 		if(currentState == gameplayStates.FULL && playerOne.choice !== null && playerTwo.choice !== null) {
-			// Use determineGameRoundOutcome() method here.
-			// Need to add wins and losses fields to playerOne and playerTwo client-side objects.
+			$(document).trigger("gameFaceoff");
 		}
 	});
 
-	function determineGameRoundOutcome(playerOneRps, playerTwoRps) {
-		// TODO still need to implement.
+	$(document).on("gameFaceoff", function() {
+		var gameWinner = determineGameWinner(outcomeStateFromText[playerOne.choice], outcomeStateFromText[playerTwo.choice]);
+		switch(gameWinner) {
+			case playerStates.FIRST:
+				playerOne.wins++;
+				playerTwo.losses++;
+				$('.winner-name').text(playerOne.name + " Wins!!!");
+				break;
+			case playerStates.SECOND:
+				playerTwo.wins++;
+				playerOne.losses++;
+				$('.winner-name').text(playerTwo.name + " Wins!!!");
+				break;
+		}
+		$("p[name='player-choice[1]']").text(playerOne.choice);
+		$("p[name='player-choice[2]']").text(playerTwo.choice);
+		playerOne.choice = null;
+		playerTwo.choice = null;
+		updateDbWithVariables();
+	});
+
+	function determineGameWinner(playerOneRpsChoice, playerTwoRpsChoice) {
+		var gameWinner = playerStates.NOT;
+		switch(playerOneRpsChoice) {
+			case(rpsChoices.ROCK):
+				switch(playerTwoRpsChoice) {
+					case(rpsChoices.PAPER):
+						gameWinner = playerStates.SECOND;
+						break;
+					case(rpsChoices.SCISSORS):
+						gameWinner = playerStates.FIRST;
+						break;
+				}
+				break;
+			case(rpsChoices.PAPER):
+				switch(playerTwoRpsChoice) {
+					case(rpsChoices.ROCK):
+						gameWinner = playerStates.FIRST;
+						break;
+					case(rpsChoices.SCISSORS):
+						gameWinner = playerStates.SECOND;
+						break;
+				}
+				break;
+			case(rpsChoices.SCISSORS):
+				switch(playerTwoRpsChoice) {
+					case(rpsChoices.ROCK):
+						gameWinner = playerStates.SECOND;
+						break;
+					case(rpsChoices.PAPER):
+						gameWinner = playerStates.FIRST;
+						break;
+				}
+				break;
+		}
+		return gameWinner;
 	}
+
 
 
 
 	$("input[name='submit-name']").on("click", function(event) {
 		event.preventDefault();
-		debugger;
 		var addedUserName = $("input[name='input-name']").val();
 		if(currentState == gameplayStates.EMPTY || currentState == gameplayStates.WAITING) {
 			activePlayers++;
 			switch(currentState) {
 				case gameplayStates.EMPTY:
 					playerOne.name = addedUserName;
+					playerOne.choice = null;
+					playerOne.wins = 0;
+					playerOne.losses = 0;
 					currentState = gameplayStates.WAITING;
 					break;
 				case gameplayStates.WAITING:
 					playerTwo.name = addedUserName;
+					playerTwo.choice = null;
+					playerTwo.wins = 0;
+					playerTwo.losses = 0;
 					currentState = gameplayStates.FULL;
 					break;
 			}
-			database.ref().set({
-				playerOneName: playerOne.name,
-				playerTwoName: playerTwo.name,
-				playerOneChoice: playerOne.choice,
-				playerTwoChoice: playerTwo.choice,
-				numActivePlayers: activePlayers,
-				gameState: currentState
-			});
+			updateDbWithVariables();
 		}
 
 		$("input[name='input-name']").val("");
@@ -158,16 +232,19 @@ $(document).ready(function() {
 	function updateDbWithVariables() {
 		database.ref().set({
 			playerOneName: playerOne.name,
-			playerTwoName: playerTwo.name,
 			playerOneChoice: playerOne.choice,
+			playerOneWins: playerOne.wins,
+			playerOneLosses: playerOne.losses,
+			playerTwoName: playerTwo.name,
 			playerTwoChoice: playerTwo.choice,
+			playerTwoWins: playerTwo.wins,
+			playerTwoLosses: playerTwo.losses,
 			numActivePlayers: activePlayers,
 			gameState: currentState
 		});
 	}
 
 	$(".rps-choice").on("click", function(e) {
-		debugger;
 		var choice = $(this).attr("data-choice");
 		var playerNum = parseInt($(this).attr("data-player"));
 		switch(playerNum) {
