@@ -44,6 +44,8 @@ $(document).ready(function() {
 
 	var activePlayers = 0;
 
+	var myPlayer = playerStates.NOT;
+
 	var playerOne = 
 	{
 		name: "",
@@ -88,35 +90,6 @@ $(document).ready(function() {
 		}
 		if (snapshot.child("numActivePlayers").exists()) {
 			activePlayers = snapshot.val().numActivePlayers;
-
-			console.log("isPlayer: " + isPlayer);
-			console.log("activePlayers: " + activePlayers);
-
-			if(isPlayer) {
-				switch(activePlayers) {
-					case 1:
-					console.log("I'm the only active player.");
-					break;
-					case 2:
-					console.log("I'm in an active game.");
-					break;
-					default:
-					console.log("This makes no sense.");
-					break;
-				}
-			} else {
-				switch(activePlayers) {
-					case 0:
-					console.log("Nobody is queued to play, not even me.");
-					break;
-					case 1:
-					console.log("Someone else is waiting to start a game. Join?");
-					break;
-					default:
-					console.log("Game is full.");
-					break;
-				}
-			}
 		}
 		if (snapshot.child("gameState").exists()) {
 			currentState = snapshot.val().gameState;
@@ -208,6 +181,7 @@ $(document).ready(function() {
 			activePlayers++;
 			switch(currentState) {
 				case gameplayStates.EMPTY:
+					myPlayer = playerStates.FIRST;
 					playerOne.name = addedUserName;
 					playerOne.choice = null;
 					playerOne.wins = 0;
@@ -215,6 +189,7 @@ $(document).ready(function() {
 					currentState = gameplayStates.WAITING;
 					break;
 				case gameplayStates.WAITING:
+					myPlayer = playerStates.SECOND;
 					playerTwo.name = addedUserName;
 					playerTwo.choice = null;
 					playerTwo.wins = 0;
@@ -307,12 +282,16 @@ $(document).ready(function() {
 	function disconnectPlayer(playerNumber) {
 		if(playerNumber === playerStates.FIRST || playerNumber === playerStates.SECOND) {
 			if(currentState === gameplayStates.FULL || currentState === gameplayStates.WAITING) {
+				myPlayer = playerStates.NOT;
 				if(currentState === gameplayStates.FULL) {
 					if(playerNumber === playerStates.FIRST) {
 						playerOne.name = playerTwo.name;
 						playerOne.choice = playerTwo.choice;
 						playerOne.wins = playerTwo.wins;
 						playerOne.losses = playerTwo.losses;
+						if(myPlayer === playerStates.SECOND) {
+							myPlayer = playerStates.FIRST;
+						}
 					}
 				} else if(currentState === gameplayStates.WAITING) {
 					playerOne.name = null;
@@ -346,10 +325,5 @@ $(document).ready(function() {
 
 	var connectedRef = database.ref(".info/connected");
 	connectedRef.on("value", function(snap) {
-		if (snap.val() === true) {
-			alert("connected");
-		} else {
-			alert("not connected");
-		}
 	});
 });
