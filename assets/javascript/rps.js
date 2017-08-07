@@ -13,14 +13,14 @@ $(document).ready(function() {
 
 
 	var gameplayStates = {
-	    EMPTY: 0,
-	    WAITING: 1,
-	    FULL: 2
+		EMPTY: 0,
+		WAITING: 1,
+		FULL: 2
 	};
 	var rpsChoices = {
-	    ROCK: 0,
-	    PAPER: 1,
-	    SCISSORS: 2
+		ROCK: 0,
+		PAPER: 1,
+		SCISSORS: 2
 	};
 	var playerStates = {
 		NOT: 0,
@@ -95,26 +95,26 @@ $(document).ready(function() {
 			if(isPlayer) {
 				switch(activePlayers) {
 					case 1:
-						console.log("I'm the only active player.");
-						break;
+					console.log("I'm the only active player.");
+					break;
 					case 2:
-						console.log("I'm in an active game.");
-						break;
+					console.log("I'm in an active game.");
+					break;
 					default:
-						console.log("This makes no sense.");
-						break;
+					console.log("This makes no sense.");
+					break;
 				}
 			} else {
 				switch(activePlayers) {
 					case 0:
-						console.log("Nobody is queued to play, not even me.");
-						break;
+					console.log("Nobody is queued to play, not even me.");
+					break;
 					case 1:
-						console.log("Someone else is waiting to start a game. Join?");
-						break;
+					console.log("Someone else is waiting to start a game. Join?");
+					break;
 					default:
-						console.log("Game is full.");
-						break;
+					console.log("Game is full.");
+					break;
 				}
 			}
 		}
@@ -144,18 +144,18 @@ $(document).ready(function() {
 		var gameWinner = determineGameWinner(outcomeStateFromText[playerOne.choice], outcomeStateFromText[playerTwo.choice]);
 		switch(gameWinner) {
 			case playerStates.FIRST:
-				playerOne.wins++;
-				playerTwo.losses++;
-				$('.winner-name').text(playerOne.name + " Wins!!!");
-				break;
+			playerOne.wins++;
+			playerTwo.losses++;
+			$('.winner-name').text(playerOne.name + " Wins!!!");
+			break;
 			case playerStates.SECOND:
-				playerTwo.wins++;
-				playerOne.losses++;
-				$('.winner-name').text(playerTwo.name + " Wins!!!");
-				break;
+			playerTwo.wins++;
+			playerOne.losses++;
+			$('.winner-name').text(playerTwo.name + " Wins!!!");
+			break;
 			case playerStates.NOT:
-				$('.winner-name').text("Tie!!!");
-				break;
+			$('.winner-name').text("Tie!!!");
+			break;
 		}
 		$("p[name='player-choice[1]']").text(playerOne.choice);
 		$("p[name='player-choice[2]']").text(playerTwo.choice);
@@ -168,46 +168,43 @@ $(document).ready(function() {
 		var gameWinner = playerStates.NOT;
 		switch(playerOneRpsChoice) {
 			case(rpsChoices.ROCK):
-				switch(playerTwoRpsChoice) {
-					case(rpsChoices.PAPER):
-						gameWinner = playerStates.SECOND;
-						break;
-					case(rpsChoices.SCISSORS):
-						gameWinner = playerStates.FIRST;
-						break;
-				}
+			switch(playerTwoRpsChoice) {
+				case(rpsChoices.PAPER):
+				gameWinner = playerStates.SECOND;
 				break;
+				case(rpsChoices.SCISSORS):
+				gameWinner = playerStates.FIRST;
+				break;
+			}
+			break;
 			case(rpsChoices.PAPER):
-				switch(playerTwoRpsChoice) {
-					case(rpsChoices.ROCK):
-						gameWinner = playerStates.FIRST;
-						break;
-					case(rpsChoices.SCISSORS):
-						gameWinner = playerStates.SECOND;
-						break;
-				}
+			switch(playerTwoRpsChoice) {
+				case(rpsChoices.ROCK):
+				gameWinner = playerStates.FIRST;
 				break;
+				case(rpsChoices.SCISSORS):
+				gameWinner = playerStates.SECOND;
+				break;
+			}
+			break;
 			case(rpsChoices.SCISSORS):
-				switch(playerTwoRpsChoice) {
-					case(rpsChoices.ROCK):
-						gameWinner = playerStates.SECOND;
-						break;
-					case(rpsChoices.PAPER):
-						gameWinner = playerStates.FIRST;
-						break;
-				}
+			switch(playerTwoRpsChoice) {
+				case(rpsChoices.ROCK):
+				gameWinner = playerStates.SECOND;
 				break;
+				case(rpsChoices.PAPER):
+				gameWinner = playerStates.FIRST;
+				break;
+			}
+			break;
 		}
 		return gameWinner;
 	}
 
-
-
-
 	$("input[name='submit-name']").on("click", function(event) {
 		event.preventDefault();
 		var addedUserName = $("input[name='input-name']").val();
-		if(currentState == gameplayStates.EMPTY || currentState == gameplayStates.WAITING) {
+		if(addedUserName && (currentState == gameplayStates.EMPTY || currentState == gameplayStates.WAITING)) {
 			activePlayers++;
 			switch(currentState) {
 				case gameplayStates.EMPTY:
@@ -267,15 +264,26 @@ $(document).ready(function() {
 			case gameplayStates.EMPTY:
 				$("p[name='player-message[1]']").show();
 				$("p[name='player-message[2]']").show();
+				$("p[name='player-name[1]']").empty();
+				$("p[name='player-name[2]']").empty();
 				$("ul[name='rps-options[1]']").hide();
 				$("ul[name='rps-options[2]']").hide();
+				$("[name='player-choice[1]']").empty();
+				$("[name='player-choice[2]']").empty();
+				$("[name='wins-losses-container[1]']").hide();
+				$("[name='wins-losses-container[2]']").hide();
+
 				break;
 			case gameplayStates.WAITING:
 				$("p[name='player-message[1]']").hide();
 				$("p[name='player-message[2]']").show();
 				$("p[name='player-name[1]']").text(playerOne.name);
+				$("p[name='player-name[2]']").empty();
 				$("ul[name='rps-options[1]']").show();
 				$("ul[name='rps-options[2]']").hide();
+				$("[name='player-choice[2]']").empty();
+				$("[name='wins-losses-container[1]']").show();
+				$("[name='wins-losses-container[2]']").hide();
 				break;
 			case gameplayStates.FULL:
 				$("p[name='player-message[1]']").hide();
@@ -284,7 +292,64 @@ $(document).ready(function() {
 				$("p[name='player-name[2]']").text(playerTwo.name);
 				$("ul[name='rps-options[1]']").show();
 				$("ul[name='rps-options[2]']").show();
+				$("[name='wins-losses-container[1]']").show();
+				$("[name='wins-losses-container[2]']").show();
 				break;
 		}
 	}
+
+	function matchHtmlToDataForPlayerBox(playerNumber) {
+		if(playerNumber === playerStates.FIRST || playerNumber === playerStates.SECOND) {
+			$("[name = 'player-name[2]']").empty();
+		}
+	}
+
+	function disconnectPlayer(playerNumber) {
+		if(playerNumber === playerStates.FIRST || playerNumber === playerStates.SECOND) {
+			if(currentState === gameplayStates.FULL || currentState === gameplayStates.WAITING) {
+				if(currentState === gameplayStates.FULL) {
+					if(playerNumber === playerStates.FIRST) {
+						playerOne.name = playerTwo.name;
+						playerOne.choice = playerTwo.choice;
+						playerOne.wins = playerTwo.wins;
+						playerOne.losses = playerTwo.losses;
+					}
+				} else if(currentState === gameplayStates.WAITING) {
+					playerOne.name = null;
+					playerOne.choice = null;
+					playerOne.wins = null;
+					playerOne.losses = null;
+				}
+
+				playerTwo.name = null;
+				playerTwo.choice = null;
+				playerTwo.wins = null;
+				playerTwo.losses = null;
+				if(activePlayers > 0) {
+					activePlayers--;
+				}
+				if(currentState === gameplayStates.FULL) {
+					currentState = gameplayStates.WAITING;
+				} else if(currentState === gameplayStates.WAITING) {
+					currentState = gameplayStates.EMPTY;
+				}
+				updateDbWithVariables();
+			}
+		}
+	}
+	$("#disconnect-player-1").on("click", function() {
+		disconnectPlayer(1);
+	});
+	$("#disconnect-player-2").on("click", function() {
+		disconnectPlayer(2);
+	});
+
+	var connectedRef = database.ref(".info/connected");
+	connectedRef.on("value", function(snap) {
+		if (snap.val() === true) {
+			alert("connected");
+		} else {
+			alert("not connected");
+		}
+	});
 });
